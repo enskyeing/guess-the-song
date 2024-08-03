@@ -2,6 +2,12 @@ from genius_brain import *
 from data_managers import Artist, Song
 import random
 
+# TODO allow user to quit game at any time using "q"
+# TODO Add error handling for finding artist
+# TODO add confirmation for finding correct artist
+# TODO add time limit functionality
+
+
 
 class GTSGame:
     def __init__(self, time_limit: int = 60):
@@ -11,6 +17,7 @@ class GTSGame:
         self.song = None
         self.lyric = ""
         self.round = 1
+        self.game_ongoing = True
         self.welcome()
         self.start()
 
@@ -28,16 +35,43 @@ class GTSGame:
 
     def start(self):
         """Starts the game."""
-        self.choose_artist()
-        self.choose_song()
-        print(f"Round {self.round} starting in...")
+        while self.game_ongoing:
+            user_guessing = True
+            self.choose_artist()
+            self.choose_song()
+            print(f"Round {self.round} starting in...")
+            for i in range(0, 6):
+                print(i)
+            print(f"Artist: {self.artist.name}")
+            print(f"Lyric: {self.choose_lyric()}")
+            while user_guessing:
+                guess = input("Guess: ").lower()
+                if guess == self.song.title.lower():
+                    print(f"You guessed correctly!\nThe song was {self.song.title} by {self.artist.name}.")
+                    user_guessing = False
+                else:
+                    continue
+            self.replay()
+        self.end()
 
-        for i in range(1, 6):
-            print(i)
-
-    def replay(self) -> bool:
+    def replay(self):
         """Checks if player wants to play again."""
-        pass
+        valid_answer = False
+        while not valid_answer:
+            play_again = input("Would you like to play again? (y/n) ").lower()
+            if play_again == "y":
+                valid_answer = True
+                self.round += 1
+                self.game_ongoing = True
+            elif play_again == "n":
+                valid_answer = True
+                self.game_ongoing = False
+            else:
+                print("That was not a valid answer.")
+
+    def end(self):
+        print(f"You played {self.round} round(s).\nThanks for playing Guess the Song!")
+        # TODO add game stats
 
     def choose_artist(self):
         """Uses LyricGenius to get artist information and songs."""
@@ -72,4 +106,4 @@ class GTSGame:
 
     def choose_lyric(self):
         lyric_list = [line for line in self.song.lyrics.splitlines() if len(line) > 25 and self.song.title not in line]
-        print(lyric_list)
+        return random.choice(lyric_list)
